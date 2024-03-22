@@ -70,3 +70,61 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, String> {
 }
+============================================
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+public class UserController {
+
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<String> addUser(@RequestBody UserRequestDTO request) {
+        userService.addUser(request);
+        return ResponseEntity.ok("Users added successfully");
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserRequestDTO>> getAllUsers() {
+        List<UserRequestDTO> users = userService.getAllUsers();
+        if (users.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(users);
+        }
+    }
+}
+=============================================================================
+import javax.persistence.*;
+
+@Entity
+@Table(name = "User")
+public class User {
+
+    @Id
+    @Column(name = "User_Pk_Id")
+    private String userPkId;
+
+    @Column(name = "User_Id")
+    private String userId;
+
+    @Column(name = "Direction_Id")
+    private String directionId;
+
+    @Column(name = "Direction_Cycle")
+    private String directionCycle;
+
+    @Column(name = "Company_Code")
+    private String companyCode;
+
+    // Constructors, Getters, Setters
+}
