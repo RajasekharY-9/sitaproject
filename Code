@@ -3,3 +3,70 @@ public interface UserService {
     List<UserRequestDTO> getAllUsers();
 }
 ------------------------------------------
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public void addUser(UserRequestDTO request) {
+        validateRequest(request);
+
+        for (DirectionDTO direction : request.getDirections()) {
+            User user = new User();
+            user.setUserPkId(UUID.randomUUID().toString());
+            user.setUserId(request.getUserId());
+            user.setDirectionId(direction.getDirectionId());
+            user.setDirectionCycle(direction.getDirectionCycle());
+            user.setCompanyCode(direction.getCompanyCode());
+
+            userRepository.save(user);
+        }
+    }
+
+    @Override
+    public List<UserRequestDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return mapUsersToDTOs(users);
+    }
+
+    private List<UserRequestDTO> mapUsersToDTOs(List<User> users) {
+        List<UserRequestDTO> userDTOs = new ArrayList<>();
+
+        for (User user : users) {
+            UserRequestDTO userDTO = new UserRequestDTO();
+            userDTO.setUserId(user.getUserId());
+
+            DirectionDTO directionDTO = new DirectionDTO();
+            directionDTO.setDirectionId(user.getDirectionId());
+            directionDTO.setDirectionCycle(user.getDirectionCycle());
+            directionDTO.setCompanyCode(user.getCompanyCode());
+
+            userDTO.setDirections(Collections.singletonList(directionDTO));
+
+            userDTOs.add(userDTO);
+        }
+
+        return userDTOs;
+    }
+
+    private void validateRequest(UserRequestDTO request) {
+        // Validation logic goes here
+    }
+}
+==========================================================
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, String> {
+}
