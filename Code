@@ -3,6 +3,31 @@ public interface UserService {
     List<UserRequestDTO> getAllUsers();
 }
 ------------------------------------------
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserRepositoryImpl {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public UserRepositoryImpl(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public void save(User user) {
+        String sql = "INSERT INTO User (User_Pk_Id, User_Id, Direction_Id, Direction_Cycle, Company_Code) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, user.getUserPkId(), user.getUserId(),
+                user.getDirectionId(), user.getDirectionCycle(), user.getCompanyCode());
+    }
+}
+ 
+
+  
+==========================================================
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +37,10 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryImpl userRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepositoryImpl userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -37,39 +62,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserRequestDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return mapUsersToDTOs(users);
-    }
-
-    private List<UserRequestDTO> mapUsersToDTOs(List<User> users) {
-        List<UserRequestDTO> userDTOs = new ArrayList<>();
-
-        for (User user : users) {
-            UserRequestDTO userDTO = new UserRequestDTO();
-            userDTO.setUserId(user.getUserId());
-
-            DirectionDTO directionDTO = new DirectionDTO();
-            directionDTO.setDirectionId(user.getDirectionId());
-            directionDTO.setDirectionCycle(user.getDirectionCycle());
-            directionDTO.setCompanyCode(user.getCompanyCode());
-
-            userDTO.setDirections(Collections.singletonList(directionDTO));
-
-            userDTOs.add(userDTO);
-        }
-
-        return userDTOs;
+        // Implement method to fetch all users using JDBC
+        return null;
     }
 
     private void validateRequest(UserRequestDTO request) {
         // Validation logic goes here
     }
 }
-==========================================================
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, String> {
-}
 ============================================
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -95,14 +96,11 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<List<UserRequestDTO>> getAllUsers() {
-        List<UserRequestDTO> users = userService.getAllUsers();
-        if (users.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok(users);
-        }
+        // Implement method to fetch all users using UserService
+        return null;
     }
 }
+
 =============================================================================
 import javax.persistence.*;
 
